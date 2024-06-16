@@ -1,22 +1,25 @@
 package com.sharemiracle.service.serviceImpl;
 
+import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+
 import com.sharemiracle.constant.MessageConstant;
 import com.sharemiracle.dto.*;
-import com.sharemiracle.mapper.ElasticSearchMapper;
 import com.sharemiracle.result.Result;
+//import com.sharemiracle.mapper.ElasticSearchMapper;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.vo.EsSearchVO;
 import org.springframework.stereotype.Service;
+import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.*;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
+
 
 @Slf4j
 @Service
@@ -91,7 +94,19 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
     }
 
     @Override
-    public void addItem(ElasticSearchItemDTO elasticSearchItemDTO) {
+    public Result<String> addItem(ElasticSearchItemDTO elasticSearchItemDTO) {
+        try {
+            log.info("build elastic item token:{}",elasticSearchItemDTO.toJson());
+            IndexResponse response = esClient.index(i -> i
+                .index("dataset")
+                .id(String.valueOf(elasticSearchItemDTO.getId()))
+                .document(elasticSearchItemDTO)
+            );
+            return Result.success(MessageConstant.ES_INSERT_SUCCESS);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
     }
 

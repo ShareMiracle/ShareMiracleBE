@@ -13,5 +13,5 @@ public interface ElasticSearchService {
 
     EsSearchVO search(SearchDTO searchDTO) throws IOException;
 
-    void addItem(ElasticSearchItemDTO elasticSearchItemDTO);
+    Result<String> addItem(ElasticSearchItemDTO elasticSearchItemDTO);
 }
