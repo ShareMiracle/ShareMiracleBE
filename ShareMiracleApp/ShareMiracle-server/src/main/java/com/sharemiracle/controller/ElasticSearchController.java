@@ -35,10 +35,10 @@ public class ElasticSearchController {
     }
 
     @PutMapping("/addItem")
-    public Result addItemController(@RequestBody ElasticSearchItemDTO elasticSearchItemDTO) {
-        log.info("添加Es数据：{}", elasticSearchItemDTO);
-//        datasetService.add(searchDTO);
-        return Result.success();
+    public Result<String> addItemController(@RequestBody ElasticSearchItemDTO elasticSearchItemDTO) {
+        log.info("添加Es数据:{}", elasticSearchItemDTO);
+        // Result<String> result = elasticSearchServerImpl.addItem(elasticSearchItemDTO);
+        return elasticSearchServerImpl.addItem(elasticSearchItemDTO);
     }
 
 }

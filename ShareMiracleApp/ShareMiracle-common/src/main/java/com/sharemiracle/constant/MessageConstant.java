@@ -38,5 +38,6 @@ public class MessageConstant {
     public static final String PASSWORD_EDIT_SUCCESS = "密码修改成功";
 
     public static final String ESSEAERCH_SUCCESS = "es search success";
+    public static final String ES_INSERT_SUCCESS = "es addItem success";
 
 }
