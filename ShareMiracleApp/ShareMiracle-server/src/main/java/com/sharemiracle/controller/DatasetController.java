@@ -6,32 +6,34 @@ import com.sharemiracle.dto.DatasetOrganDTO;
 import com.sharemiracle.dto.DatasetQueryDTO;
 import com.sharemiracle.entity.Dataset;
 import com.sharemiracle.result.Result;
-import com.sharemiracle.service.serviceImpl.DatasetServiceImpl;
+import com.sharemiracle.service.DatasetService;
 import com.sharemiracle.vo.DatasetOrganVO;
 import com.sharemiracle.vo.DatasetQueryAllVO;
 import com.sharemiracle.vo.DatasetQueryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
-
 
 
 @Slf4j
 @RestController
 @RequestMapping("/dataset")
 public class DatasetController {
+
     @Resource
-    private DatasetServiceImpl datasetService;
+    private DatasetService datasetService;
 
     /**
      * 新建数据集
      */
     @PostMapping("/add")
-    public Result buildModelController(@RequestBody DatasetDTO datasetDTO) {
+    public Result<String> buildModelController(@RequestBody DatasetDTO datasetDTO, @RequestParam("file") MultipartFile file) {
         log.info("新建数据集：{}", datasetDTO);
-        datasetService.add(datasetDTO);
+        datasetService.add(datasetDTO, file);
         return Result.success();
     }
 
@@ -39,7 +41,7 @@ public class DatasetController {
      * 删除数据集
      */
     @DeleteMapping("/delete")
-    public Result delete(@RequestBody DatasetDeleteDTO datasetDeleteDTO) {
+    public Result delete(@RequestBody DatasetDeleteDTO datasetDeleteDTO, @RequestParam("name") String filename) {
         log.info("删除数据集数据：{}", datasetDeleteDTO.getId());
         datasetService.delete(datasetDeleteDTO);
         return Result.success();
@@ -109,7 +111,7 @@ public class DatasetController {
      * 查询当前用户有权使用的所有数据集
      */
     @GetMapping("/query-all")
-    public  Result<DatasetQueryAllVO> selectAll() {
+    public Result<DatasetQueryAllVO> selectAll() {
         log.info("查询当前用户有权使用的所有数据集");
 
         List<Long> list = datasetService.selectAll();
@@ -118,6 +120,18 @@ public class DatasetController {
                 .ids(list)
                 .build();
         return Result.success(datasetqueryallVO);
+    }
+
+
+    /**
+     * 下载数据集
+     * @param filename
+     * @param response
+     * @return
+     */
+    @GetMapping("/download/{filename}")
+    public Result<String> downloadFile(@PathVariable String filename, HttpServletResponse response){
+        return datasetService.downloadFile(filename, response);
     }
 
 }

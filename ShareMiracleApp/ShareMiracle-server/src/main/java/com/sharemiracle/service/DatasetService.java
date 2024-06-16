@@ -1,17 +1,21 @@
 package com.sharemiracle.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.sharemiracle.dto.DatasetDTO;
 import com.sharemiracle.dto.DatasetDeleteDTO;
 import com.sharemiracle.dto.DatasetOrganDTO;
 import com.sharemiracle.dto.DatasetQueryDTO;
 import com.sharemiracle.entity.Dataset;
 import com.sharemiracle.result.Result;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
-public interface DatasetService {
+public interface DatasetService extends IService<Dataset> {
 
-    void add(DatasetDTO datasetDTO);
+    Result<String> add(DatasetDTO datasetDTO, MultipartFile file);
 
     void delete(DatasetDeleteDTO datasetDeleteDTO);
 
@@ -27,4 +31,5 @@ public interface DatasetService {
 
     List<Long> selectAll();
 
+    Result<String> downloadFile(String filename, HttpServletResponse response);
 }

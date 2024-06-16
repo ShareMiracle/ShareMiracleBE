@@ -52,6 +52,11 @@ spring:
       username: ${miracle.mongodb.username}
       password: ${miracle.mongodb.password}
 
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 100MB
+
 mybatis:
   #mapper配置文件
   mapper-locations: classpath:/mapper/*.xml

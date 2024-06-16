@@ -1,10 +1,11 @@
 package com.sharemiracle.service.serviceImpl;
 
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.sharemiracle.constant.FileConstant;
 import com.sharemiracle.context.BaseContext;
-import com.sharemiracle.dto.DatasetDTO;
-import com.sharemiracle.dto.DatasetDeleteDTO;
-import com.sharemiracle.dto.DatasetOrganDTO;
-import com.sharemiracle.dto.DatasetQueryDTO;
+import com.sharemiracle.dto.*;
 import com.sharemiracle.entity.Dataset;
 import com.sharemiracle.entity.Organization;
 import com.sharemiracle.exception.DeletionNotAllowedException;
@@ -13,19 +14,24 @@ import com.sharemiracle.result.Result;
 import com.sharemiracle.service.DatasetService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
-public class DatasetServiceImpl implements DatasetService {
+public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> implements DatasetService {
 
     @Resource
     private DatasetMapper datasetMapper;
 
     @Override
-    public void add(DatasetDTO datasetDTO) {
+    public Result<String> add(DatasetDTO datasetDTO, MultipartFile file) {
         Dataset dataset = new Dataset();
         BeanUtils.copyProperties(datasetDTO,dataset);
 
@@ -34,7 +40,7 @@ public class DatasetServiceImpl implements DatasetService {
         Long userId = BaseContext.getCurrentId();
         dataset.setUserId(userId);
 
-        datasetMapper.insert(dataset);
+        int isSuccess = datasetMapper.insert(dataset);
 
         Long datasetId = dataset.getId();
 
@@ -46,18 +52,26 @@ public class DatasetServiceImpl implements DatasetService {
                 datasetMapper.insertDatasetOrgan(datasetId, organizationId);
             }
         }
+        // 上传文件
+        if(isSuccess>0 && uploadFile(file)){
+            return Result.success("新建数据集成功！");
+        }
+        if(isSuccess>0) return Result.error("上传数据集失败！");
+        return Result.error("新建数据集失败！");
     }
 
     @Override
     public void delete(DatasetDeleteDTO datasetDeleteDTO) {
-         Long userId = BaseContext.getCurrentId();
+        Long userId = BaseContext.getCurrentId();
         Long id = datasetDeleteDTO.getId();
+        String filename = getById(id).getName();
 
         Long auth = datasetMapper.selectAuthorityById(id);
         if(!Objects.equals(auth, userId)){
             throw new DeletionNotAllowedException("删除失败");
         }else{
             datasetMapper.deleteById(id);
+            deleteDataset(filename);
         }
     }
 
@@ -68,10 +82,12 @@ public class DatasetServiceImpl implements DatasetService {
 
         for (Long id : ids) {
             Long auth = datasetMapper.selectAuthorityById(id);
+            String filename = getById(id).getName();
             if(!Objects.equals(auth, userId)){
                 throw new DeletionNotAllowedException("删除失败");
             }else{
                 datasetMapper.deleteById(id);
+                deleteDataset(filename);
             }
         }
     }
@@ -156,4 +172,93 @@ public class DatasetServiceImpl implements DatasetService {
         }
         return new ArrayList<>(uniqueIds);
     }
+
+    /**
+     * 上传文件
+     * @param file
+     * @return
+     */
+    public Boolean uploadFile(MultipartFile file) {
+        try {
+            // 获取原始文件名称
+            String originalFilename = file.getOriginalFilename();
+            // 生成新文件名
+            String fileName = createNewFileName(originalFilename);
+            // 保存文件
+            file.transferTo(new File(FileConstant.DATASET_UPLOAD_DIR, fileName));
+            // 返回结果
+            log.debug("文件上传成功，{" + fileName + "}");
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private String createNewFileName(String originalFilename) {
+        // 获取后缀
+        String suffix = StrUtil.subAfter(originalFilename, ".", true);
+        // 生成目录
+        String name = UUID.randomUUID().toString();
+        int hash = name.hashCode();
+        int d1 = hash & 0xF;
+        int d2 = (hash >> 4) & 0xF;
+        // 判断目录是否存在
+        File dir = new File(FileConstant.DATASET_UPLOAD_DIR, StrUtil.format("/dataset/{}/{}", d1, d2));
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        // 生成文件名
+        return StrUtil.format("/dataset/{}/{}/{}.{}", d1, d2, name, suffix);
+    }
+
+    public Boolean deleteDataset(String filename) {
+        File file = new File(FileConstant.DATASET_UPLOAD_DIR, filename);
+        if (file.isDirectory()) {
+            log.error("文件名称错误!");
+            return false;
+        }
+        FileUtil.del(file);
+        return true;
+    }
+
+    @Override
+    public Result<String> downloadFile(String filename, HttpServletResponse response) {
+        try {
+            // TODO: 从服务器获取文件
+            // 从本地获取文件
+            File serverFile = getFile(filename);
+            // 设置response的header
+            response.setContentType("application/octet-stream");
+            response.setHeader("Content-Disposition", "attachment;filename=" + serverFile.getName());
+            // 通过response的outputStream将文件输出到客户端
+            Files.copy(serverFile.toPath(), response.getOutputStream());
+            return Result.success();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.error("");
+        }
+    }
+
+    private void saveFileToLocal(MultipartFile file) throws IOException {
+        // TODO: 将文件保存到服务器
+    }
+
+    private File getFile(String fileName) throws IOException {
+        //TODO: 从文件服务器获取文件
+        // ...
+
+        // 存储上传文件的文件夹
+        String storageDirectory = FileConstant.DATASET_UPLOAD_DIR;
+
+        // 创建File对象，指向该文件
+        File serverFile = new File(storageDirectory + fileName);
+
+        // 确保文件存在且可读
+        if (serverFile.exists() && serverFile.canRead()) {
+            return serverFile;
+        } else {
+            throw new RuntimeException("文件不存在/文件不可读: " + serverFile.getAbsolutePath());
+        }
+    }
+
 }
