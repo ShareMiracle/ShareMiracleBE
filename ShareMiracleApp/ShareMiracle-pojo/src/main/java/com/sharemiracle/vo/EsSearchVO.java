@@ -18,14 +18,10 @@ public class EsSearchVO implements Serializable {
     /**
      * 检索到的项
      */
-    private int cnt;
-    /**
-     * 检索分数
-     */
-    private List<Double> score;
+    private int page_num;
     /**
      * 检索结果
      */
-    private List<ElasticSearchItemDTO> Result;
+    private List<ElasticSearchItemDTO> datasets;
 
 }
