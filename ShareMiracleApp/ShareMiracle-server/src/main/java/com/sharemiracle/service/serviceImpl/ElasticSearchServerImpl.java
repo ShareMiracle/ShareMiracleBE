@@ -4,7 +4,7 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.sharemiracle.constant.MessageConstant;
 import com.sharemiracle.dto.*;
-import com.sharemiracle.mapper.ElasticSearchMapper;
+//import com.sharemiracle.mapper.ElasticSearchMapper;
 import com.sharemiracle.result.Result;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.vo.EsSearchVO;

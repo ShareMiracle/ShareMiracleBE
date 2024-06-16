@@ -6,3 +6,5 @@
 **/test/
 ShareMiracleApp/ShareMiracle-server/src/main/resources/application-dev.yml
 ShareMiracleApp/ShareMiracle-server/src/main/resources/application.yml
+complieRun.sh
+
