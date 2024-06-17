@@ -31,9 +31,18 @@ public class ElasticSearchItemDTO implements Serializable {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SplitInfo {
-        private int train_num;               //训练集数目
-        private int val_num;                 //验证数据数目
-        private int test_num;                //测试数据数目
+        private SplitDataLabel train;               //训练集数目
+        private SplitDataLabel val;                 //验证数据数目
+        private SplitDataLabel test;                //测试数据数目
+    }
+
+    // 内部类 SplitInfo
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SplitDataLabel {
+        private int data;                  // 数据数量
+        private int label;                 // 标签数量
     }
 
     public String toJson() {                //转化为json对象

@@ -2,13 +2,13 @@ package com.sharemiracle.service;
 
 import com.sharemiracle.dto.SearchDTO;
 import com.sharemiracle.dto.ElasticSearchItemDTO;
-import com.sharemiracle.dto.SearchDTO;
+import com.sharemiracle.dto.GetMdataMetaByIdDTO;
 import com.sharemiracle.result.Result;
-import com.sharemiracle.result.SearchResult;
-import com.sharemiracle.vo.EsAllDatasetIdVO;
 import com.sharemiracle.vo.EsSearchVO;
+import com.sharemiracle.vo.MdataMetaStatus;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface ElasticSearchService {
 
@@ -16,5 +16,7 @@ public interface ElasticSearchService {
 
     Result<String> addItem(ElasticSearchItemDTO elasticSearchItemDTO);
 
-    EsAllDatasetIdVO allDataset();
+    List<MdataMetaStatus> allDataset();
+
+    ElasticSearchItemDTO getMdataMetaById(GetMdataMetaByIdDTO mdataMetaByIdDTO);
 }

@@ -1,16 +1,19 @@
 package com.sharemiracle.service.serviceImpl;
 
+import co.elastic.clients.elasticsearch.core.GetRequest;
+import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 
+import com.sharemiracle.constant.ElasticSearchConstant;
 import com.sharemiracle.constant.MessageConstant;
 import com.sharemiracle.dto.*;
 import com.sharemiracle.result.Result;
 //import com.sharemiracle.mapper.ElasticSearchMapper;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.vo.EsSearchVO;
-import com.sharemiracle.vo.EsAllDatasetIdVO;
+import com.sharemiracle.vo.MdataMetaStatus;
 import org.springframework.stereotype.Service;
 import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,38 +126,85 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
     public Result<String> addItem(ElasticSearchItemDTO elasticSearchItemDTO) {
         try {
             log.info("build elastic item token:{}",elasticSearchItemDTO.toJson());
-            IndexResponse response = esClient.index(i -> i
-                .index("dataset")
+            
+            // 将数据录入 "dataset" 表中， id 为主键
+            esClient.index(i -> i
+                .index(ElasticSearchConstant.MdataMetaDB)
                 .id(String.valueOf(elasticSearchItemDTO.getId()))
                 .document(elasticSearchItemDTO)
             );
+
+            // 如果在 mdata-management 表格中没有项目，则创建
+            GetResponse<MdataMetaStatus> mdataRes = esClient.get(i -> i
+                .index(ElasticSearchConstant.MdataMetaManageDB)
+                .id(String.valueOf(elasticSearchItemDTO.getId()))
+            , MdataMetaStatus.class);
+
+            log.info("create mdata {}", elasticSearchItemDTO.toJson());
+
+            if (!mdataRes.found()) {
+                MdataMetaStatus metaStatus = new MdataMetaStatus();
+                metaStatus.setId(elasticSearchItemDTO.getId());
+                metaStatus.setName(elasticSearchItemDTO.getName());
+                metaStatus.setStatus(0);
+                long ts = System.currentTimeMillis();
+                metaStatus.setCreateTS(ts);
+                metaStatus.setModifyTS(ts);
+
+                esClient.index(i -> i
+                    .index(ElasticSearchConstant.MdataMetaManageDB)
+                    .id(String.valueOf(elasticSearchItemDTO.getId()))
+                    .document(metaStatus)
+                );
+            }
+            
             return Result.success(MessageConstant.ES_INSERT_SUCCESS);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-
     }
 
     @Override
-    public EsAllDatasetIdVO allDataset(){
+    public List<MdataMetaStatus> allDataset(){
         try {
+            // TODO : 增加一个分页 id 选项
             log.info("find all dataset id");
-            SearchResponse<ElasticSearchItemDTO> searchResponse = esClient.search(s -> s.index("dataset")
-            .query(q -> q.matchAll(m -> m)),
-    ElasticSearchItemDTO.class);
-
-            List<Hit<ElasticSearchItemDTO>> hits = searchResponse.hits().hits();
-            List<Integer> ids = new ArrayList<>();
-            // List<Double> scores = new ArrayList<>();
-            for (Hit<ElasticSearchItemDTO> hit: hits) {
-                ElasticSearchItemDTO items = hit.source();
-                ids.add(items.getId());
-            }
-
-            return new EsAllDatasetIdVO(
-                ids
+            SearchResponse<MdataMetaStatus> searchResponse = esClient.search(s -> s
+                .index(ElasticSearchConstant.MdataMetaManageDB)
+                .query(q -> q.matchAll(m -> m))
+                .size(500),
+                MdataMetaStatus.class
             );
+
+            List<Hit<MdataMetaStatus>> hits = searchResponse.hits().hits();
+            List<MdataMetaStatus> results = new ArrayList<MdataMetaStatus>();
+            log.info("hits length: {}", hits.size());
+            for (Hit<MdataMetaStatus> hit: hits) {
+                MdataMetaStatus items = hit.source();
+                results.add(items);
+            }
+            return results;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public ElasticSearchItemDTO getMdataMetaById(GetMdataMetaByIdDTO mdataMetaByIdDTO) {
+        try {
+            GetResponse<ElasticSearchItemDTO> response = esClient.get(i -> i
+                .index(ElasticSearchConstant.MdataMetaDB)
+                .id(String.valueOf(mdataMetaByIdDTO.getId()))
+            , ElasticSearchItemDTO.class);
+
+            if (response.found()) {
+                return response.source();
+            } else {
+                return null;
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
