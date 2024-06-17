@@ -10,6 +10,7 @@ import com.sharemiracle.result.Result;
 //import com.sharemiracle.mapper.ElasticSearchMapper;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.vo.EsSearchVO;
+import com.sharemiracle.vo.EsAllDatasetIdVO;
 import org.springframework.stereotype.Service;
 import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +136,30 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
 
     }
 
+    @Override
+    public EsAllDatasetIdVO allDataset(){
+        try {
+            log.info("find all dataset id");
+            SearchResponse<ElasticSearchItemDTO> searchResponse = esClient.search(s -> s.index("dataset")
+            .query(q -> q.matchAll(m -> m)),
+    ElasticSearchItemDTO.class);
+
+            List<Hit<ElasticSearchItemDTO>> hits = searchResponse.hits().hits();
+            List<Integer> ids = new ArrayList<>();
+            // List<Double> scores = new ArrayList<>();
+            for (Hit<ElasticSearchItemDTO> hit: hits) {
+                ElasticSearchItemDTO items = hit.source();
+                ids.add(items.getId());
+            }
+
+            return new EsAllDatasetIdVO(
+                ids
+            );
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
 
 

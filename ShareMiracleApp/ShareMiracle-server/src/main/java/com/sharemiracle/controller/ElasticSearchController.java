@@ -7,7 +7,7 @@ import com.sharemiracle.result.Result;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.service.serviceImpl.DatasetServiceImpl;
 import com.sharemiracle.service.serviceImpl.ElasticSearchServerImpl;
-
+import com.sharemiracle.vo.EsAllDatasetIdVO;
 import com.sharemiracle.vo.EsSearchVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -39,6 +39,14 @@ public class ElasticSearchController {
         log.info("添加Es数据:{}", elasticSearchItemDTO);
         // Result<String> result = elasticSearchServerImpl.addItem(elasticSearchItemDTO);
         return elasticSearchServerImpl.addItem(elasticSearchItemDTO);
+    }
+
+    @GetMapping("/allDataset")
+    public Result<EsAllDatasetIdVO> adllDatasetController() {
+        log.info("查找所有数据:{}");
+        // Result<String> result = elasticSearchServerImpl.addItem(elasticSearchItemDTO);
+        EsAllDatasetIdVO result = elasticSearchServerImpl.allDataset();
+        return Result.success(result, MessageConstant.DEFAULT_SUCCESS);
     }
 
 }
