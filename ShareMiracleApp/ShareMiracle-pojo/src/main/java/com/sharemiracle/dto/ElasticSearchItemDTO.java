@@ -16,7 +16,7 @@ public class ElasticSearchItemDTO implements Serializable {
 
     private int id;                         //数据集的唯一标识符
     private String name;                    //数据集的名称
-    private String origin_rrl;               //数据集的原始链接，提供数据来源 
+    private String origin_url;               //数据集的原始链接，提供数据来源 
     private String description;             //详细描述
     private String release_date;             //发布日期
     private List<Integer> task_ids;          //相关的任务的标识符
