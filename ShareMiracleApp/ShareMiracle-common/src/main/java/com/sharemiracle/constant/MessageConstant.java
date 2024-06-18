@@ -41,4 +41,7 @@ public class MessageConstant {
     public static final String ES_INSERT_SUCCESS = "es addItem success";
     public static final String DEFAULT_SUCCESS = "default success";
 
+    public static final String ES_COMMON_SUCCESS = "es.success";
+    public static final String ES_COMMON_FAIL = "es.fail";
+
 }

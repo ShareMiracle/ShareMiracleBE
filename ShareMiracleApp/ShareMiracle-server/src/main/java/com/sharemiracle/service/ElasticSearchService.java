@@ -19,4 +19,8 @@ public interface ElasticSearchService {
     List<MdataMetaStatus> allDataset();
 
     ElasticSearchItemDTO getMdataMetaById(GetMdataMetaByIdDTO mdataMetaByIdDTO);
+
+    Result<String> deleteItem(GetMdataMetaByIdDTO mdataMetaByIdDTO);
+
+    Result<String> updateMdataManagementInfo(MdataMetaStatus mdataMetaStatus);
 }

@@ -1,6 +1,5 @@
 package com.sharemiracle.service.serviceImpl;
 
-import co.elastic.clients.elasticsearch.core.GetRequest;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
@@ -10,12 +9,10 @@ import com.sharemiracle.constant.ElasticSearchConstant;
 import com.sharemiracle.constant.MessageConstant;
 import com.sharemiracle.dto.*;
 import com.sharemiracle.result.Result;
-//import com.sharemiracle.mapper.ElasticSearchMapper;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.vo.EsSearchVO;
 import com.sharemiracle.vo.MdataMetaStatus;
 import org.springframework.stereotype.Service;
-import org.elasticsearch.client.RequestOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
@@ -24,7 +21,6 @@ import java.util.*;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 // import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 
@@ -45,13 +41,13 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
     @Override
     public EsSearchVO search(SearchDTO searchDTO) throws IOException {
         // 解析前端DTO
-        int pageId = searchDTO.getPage_id();
-        String name = searchDTO.getName();
+        // int pageId = searchDTO.getPage_id();
+        // String name = searchDTO.getName();
         List<Integer> task_ids = searchDTO.getTask_ids();
         List<Integer> modality_ids = searchDTO.getModality_ids();
         List<Integer> organ_ids = searchDTO.getOrgan_ids();
-        String description = searchDTO.getDescription();
-        String sort = searchDTO.getSort();
+        // String description = searchDTO.getDescription();
+        // String sort = searchDTO.getSort();
         int pageSize = searchDTO.getPage_size();
 
         //构建筛选条件
@@ -98,7 +94,7 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
 
         // 查询es数据库
         // TODO: 实现分页查询
-        SearchResponse<ElasticSearchItemDTO> searchResponse = esClient.search(s -> s.index("dataset")
+        SearchResponse<ElasticSearchItemDTO> searchResponse = esClient.search(s -> s.index(ElasticSearchConstant.MdataMetaDB)
                         .query(q -> q.bool(boolQueryBuilder.build())),
                 ElasticSearchItemDTO.class);
 
@@ -158,7 +154,7 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
                 );
             }
             
-            return Result.success(MessageConstant.ES_INSERT_SUCCESS);
+            return Result.success(MessageConstant.ES_COMMON_SUCCESS);
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -200,6 +196,8 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
                 .id(String.valueOf(mdataMetaByIdDTO.getId()))
             , ElasticSearchItemDTO.class);
 
+            log.info("getMdataMetaById {}", response.toString());
+
             if (response.found()) {
                 return response.source();
             } else {
@@ -210,6 +208,51 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
             return null;
         }
     }
+
+    @Override
+    public Result<String> deleteItem(GetMdataMetaByIdDTO mdataMetaByIdDTO) {
+        try {
+            esClient.delete(i -> i
+                .index(ElasticSearchConstant.MdataMetaDB)
+                .id(String.valueOf(mdataMetaByIdDTO.getId()))
+            );
+            // 如果 manage 里面有也要删除
+            GetResponse<MdataMetaStatus> mdataRes = esClient.get(i -> i
+                .index(ElasticSearchConstant.MdataMetaManageDB)
+                .id(String.valueOf(mdataMetaByIdDTO.getId()))
+            , MdataMetaStatus.class);
+
+            if (mdataRes.found()) {
+                esClient.delete(i -> i
+                    .index(ElasticSearchConstant.MdataMetaManageDB)
+                    .id(String.valueOf(mdataMetaByIdDTO.getId()))
+                );
+            }
+
+            return Result.success(MessageConstant.ES_COMMON_SUCCESS);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.success(MessageConstant.ES_COMMON_FAIL);
+        }
+    }
+
+    @Override
+    public Result<String> updateMdataManagementInfo(MdataMetaStatus mdataMetaStatus) {
+        try {
+            mdataMetaStatus.setModifyTS(System.currentTimeMillis());
+
+            IndexResponse response = esClient.index(i -> i
+                .index(ElasticSearchConstant.MdataMetaManageDB)
+                .id(String.valueOf(mdataMetaStatus.getId()))
+                .document(mdataMetaStatus)
+            );
+
+            log.info("update mdata manage info, response: {}", response.toString());
+
+            return Result.success(MessageConstant.ES_COMMON_SUCCESS);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Result.success(MessageConstant.ES_COMMON_FAIL);
+        }
+    }
 }
-
-

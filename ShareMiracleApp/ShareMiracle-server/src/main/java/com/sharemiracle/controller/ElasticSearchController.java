@@ -32,11 +32,11 @@ public class ElasticSearchController {
     public Result<EsSearchVO> searchController(@RequestBody SearchDTO searchDTO) throws IOException {
         log.info("查找数据：{}", searchDTO);
         EsSearchVO result = elasticSearchServerImpl.search(searchDTO);
-        return Result.success(result, MessageConstant.ESSEAERCH_SUCCESS);
+        return Result.success(result, MessageConstant.ES_COMMON_SUCCESS);
     }
 
     @PutMapping("/add-meta-info")
-    public Result<String> addItemController(@RequestBody ElasticSearchItemDTO elasticSearchItemDTO) {
+    public Result<String> addMdataMetaById(@RequestBody ElasticSearchItemDTO elasticSearchItemDTO) {
         log.info("添加Es数据:{}", elasticSearchItemDTO);
         // Result<String> result = elasticSearchServerImpl.addItem(elasticSearchItemDTO);
         return elasticSearchServerImpl.addItem(elasticSearchItemDTO);
@@ -46,13 +46,27 @@ public class ElasticSearchController {
     public Result<List<MdataMetaStatus>> adllDatasetController() {
         // log.info("查找所有数据:{}");
         List<MdataMetaStatus> result = elasticSearchServerImpl.allDataset();
-        return Result.success(result, MessageConstant.DEFAULT_SUCCESS);
+        return Result.success(result, MessageConstant.ES_COMMON_SUCCESS);
     }
 
     @PostMapping("/get-mdata-meta-by-id")
     public Result<ElasticSearchItemDTO> getMdataMetaById(@RequestBody GetMdataMetaByIdDTO mdataMetaByIdDTO) {
         ElasticSearchItemDTO result = elasticSearchServerImpl.getMdataMetaById(mdataMetaByIdDTO);
-        return Result.success(result, MessageConstant.DEFAULT_SUCCESS);
+        return Result.success(result, MessageConstant.ES_COMMON_SUCCESS);
     }
 
+    @PostMapping("/modify-mdata-meta-by-id")
+    public Result<String> modifyMdataMetaById(@RequestBody ElasticSearchItemDTO elasticSearchItemDTO) {
+        return this.addMdataMetaById(elasticSearchItemDTO);
+    }
+    
+    @DeleteMapping("/delete-mdata-meta-by-id")
+    public Result<String> modifyMdataMetaById(@RequestBody GetMdataMetaByIdDTO mdataMetaByIdDTO) {
+        return elasticSearchServerImpl.deleteItem(mdataMetaByIdDTO);
+    }
+
+    @PostMapping("/update-mdata-management-info")
+    public Result<String> updateMdataManagementInfo(@RequestBody MdataMetaStatus mdataMetaStatus) {
+        return elasticSearchServerImpl.updateMdataManagementInfo(mdataMetaStatus);
+    }
 }
