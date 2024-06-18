@@ -180,6 +180,10 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
                 MdataMetaStatus items = hit.source();
                 results.add(items);
             }
+
+            // 排序
+            results.sort((o1, o2) -> o1.getId() - o2.getId());
+
             return results;
 
         } catch (IOException e) {
