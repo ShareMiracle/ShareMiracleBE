@@ -31,7 +31,7 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
     private DatasetMapper datasetMapper;
 
     @Override
-    public Result<String> add(DatasetDTO datasetDTO, MultipartFile file) {
+    public Result<String> add(DatasetDTO datasetDTO) {
         Dataset dataset = new Dataset();
         BeanUtils.copyProperties(datasetDTO,dataset);
 
@@ -53,10 +53,7 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
             }
         }
         // 上传文件
-        if(isSuccess>0 && uploadFile(file)){
-            return Result.success("新建数据集成功！");
-        }
-        if(isSuccess>0) return Result.error("上传数据集失败！");
+        if(isSuccess>0) return Result.success("新建数据集成功！");
         return Result.error("新建数据集失败！");
     }
 
@@ -71,7 +68,6 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
             throw new DeletionNotAllowedException("删除失败");
         }else{
             datasetMapper.deleteById(id);
-            deleteDataset(filename);
         }
     }
 
@@ -87,7 +83,6 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
                 throw new DeletionNotAllowedException("删除失败");
             }else{
                 datasetMapper.deleteById(id);
-                deleteDataset(filename);
             }
         }
     }
@@ -173,92 +168,57 @@ public class DatasetServiceImpl extends ServiceImpl<DatasetMapper, Dataset> impl
         return new ArrayList<>(uniqueIds);
     }
 
-    /**
-     * 上传文件
-     * @param file
-     * @return
-     */
-    public Boolean uploadFile(MultipartFile file) {
-        try {
-            // 获取原始文件名称
-            String originalFilename = file.getOriginalFilename();
-            // 生成新文件名
-            String fileName = createNewFileName(originalFilename);
-            // 保存文件
-            file.transferTo(new File(FileConstant.DATASET_UPLOAD_DIR, fileName));
-            // 返回结果
-            log.debug("文件上传成功，{" + fileName + "}");
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    private String createNewFileName(String originalFilename) {
-        // 获取后缀
-        String suffix = StrUtil.subAfter(originalFilename, ".", true);
-        // 生成目录
-        String name = UUID.randomUUID().toString();
-        int hash = name.hashCode();
-        int d1 = hash & 0xF;
-        int d2 = (hash >> 4) & 0xF;
-        // 判断目录是否存在
-        File dir = new File(FileConstant.DATASET_UPLOAD_DIR, StrUtil.format("/dataset/{}/{}", d1, d2));
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        // 生成文件名
-        return StrUtil.format("/dataset/{}/{}/{}.{}", d1, d2, name, suffix);
-    }
-
-    public Boolean deleteDataset(String filename) {
-        File file = new File(FileConstant.DATASET_UPLOAD_DIR, filename);
-        if (file.isDirectory()) {
-            log.error("文件名称错误!");
-            return false;
-        }
-        FileUtil.del(file);
-        return true;
-    }
-
-    @Override
-    public Result<String> downloadFile(String filename, HttpServletResponse response) {
-        try {
-            // TODO: 从服务器获取文件
-            // 从本地获取文件
-            File serverFile = getFile(filename);
-            // 设置response的header
-            response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment;filename=" + serverFile.getName());
-            // 通过response的outputStream将文件输出到客户端
-            Files.copy(serverFile.toPath(), response.getOutputStream());
-            return Result.success();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Result.error("");
-        }
-    }
-
-    private void saveFileToLocal(MultipartFile file) throws IOException {
-        // TODO: 将文件保存到服务器
-    }
-
-    private File getFile(String fileName) throws IOException {
-        //TODO: 从文件服务器获取文件
-        // ...
-
-        // 存储上传文件的文件夹
-        String storageDirectory = FileConstant.DATASET_UPLOAD_DIR;
-
-        // 创建File对象，指向该文件
-        File serverFile = new File(storageDirectory + fileName);
-
-        // 确保文件存在且可读
-        if (serverFile.exists() && serverFile.canRead()) {
-            return serverFile;
-        } else {
-            throw new RuntimeException("文件不存在/文件不可读: " + serverFile.getAbsolutePath());
-        }
-    }
+//    /**
+//     * 上传文件
+//     * @param file
+//     * @return
+//     */
+//    public Boolean uploadFile(MultipartFile file) {
+//        try {
+//            // 获取原始文件名称
+//            String originalFilename = file.getOriginalFilename();
+//            // 生成新文件名
+//            String fileName = createNewFileName(originalFilename);
+//            // 保存文件
+//            file.transferTo(new File(FileConstant.DATASET_UPLOAD_DIR, fileName));
+//            // 返回结果
+//            log.debug("文件上传成功，{" + fileName + "}");
+//            return true;
+//        } catch (IOException e) {
+//            return false;
+//        }
+//    }
+//
+//    private String createNewFileName(String originalFilename) {
+//        // 获取后缀
+//        String suffix = StrUtil.subAfter(originalFilename, ".", true);
+//        // 生成目录
+//        String name = UUID.randomUUID().toString();
+//        int hash = name.hashCode();
+//        int d1 = hash & 0xF;
+//        int d2 = (hash >> 4) & 0xF;
+//        // 判断目录是否存在
+//        File dir = new File(FileConstant.DATASET_UPLOAD_DIR, StrUtil.format("/dataset/{}/{}", d1, d2));
+//        if (!dir.exists()) {
+//            dir.mkdirs();
+//        }
+//        // 生成文件名
+//        return StrUtil.format("/dataset/{}/{}/{}.{}", d1, d2, name, suffix);
+//    }
+//
+//    public Boolean deleteDataset(String filename) {
+//        File file = new File(FileConstant.DATASET_UPLOAD_DIR, filename);
+//        if (file.isDirectory()) {
+//            log.error("文件名称错误!");
+//            return false;
+//        }
+//        FileUtil.del(file);
+//        return true;
+//    }
+//
+//    private void saveFileToLocal(MultipartFile file) throws IOException {
+//        // TODO: 将文件保存到服务器
+//    }
+//
 
 }

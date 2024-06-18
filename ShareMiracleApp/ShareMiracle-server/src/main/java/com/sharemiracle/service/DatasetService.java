@@ -14,7 +14,7 @@ import java.util.List;
 
 public interface DatasetService extends IService<Dataset> {
 
-    Result<String> add(DatasetDTO datasetDTO, MultipartFile file);
+    Result<String> add(DatasetDTO datasetDTO);
 
     void delete(DatasetDeleteDTO datasetDeleteDTO);
 
@@ -30,5 +30,4 @@ public interface DatasetService extends IService<Dataset> {
 
     List<Long> selectAll();
 
-    Result<String> downloadFile(String filename, HttpServletResponse response);
 }
