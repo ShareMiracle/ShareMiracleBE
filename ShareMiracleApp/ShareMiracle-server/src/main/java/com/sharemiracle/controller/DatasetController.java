@@ -7,15 +7,16 @@ import com.sharemiracle.dto.DatasetQueryDTO;
 import com.sharemiracle.entity.Dataset;
 import com.sharemiracle.result.Result;
 import com.sharemiracle.service.DatasetService;
+import com.sharemiracle.utils.FileUtil;
 import com.sharemiracle.vo.DatasetOrganVO;
 import com.sharemiracle.vo.DatasetQueryAllVO;
 import com.sharemiracle.vo.DatasetQueryVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.core.io.Resource;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 
@@ -24,21 +25,29 @@ import java.util.List;
 @RequestMapping("/dataset")
 public class DatasetController {
 
-    @Resource
+    @Autowired
     private DatasetService datasetService;
+
+    @Autowired
+    private FileUtil fileUtil;
 
     /**
      * 新建数据集
+     * @param datasetDTO
+     * @return
      */
     @PostMapping("/add")
-    public Result<String> buildModelController(@RequestBody DatasetDTO datasetDTO, @RequestParam("file") MultipartFile file) {
+    public Result<String> buildModelController(@RequestBody DatasetDTO datasetDTO) {
         log.info("新建数据集：{}", datasetDTO);
-        datasetService.add(datasetDTO, file);
+        datasetService.add(datasetDTO);
         return Result.success();
     }
 
     /**
      * 删除数据集
+     * @param datasetDeleteDTO
+     * @param filename
+     * @return
      */
     @DeleteMapping("/delete")
     public Result delete(@RequestBody DatasetDeleteDTO datasetDeleteDTO, @RequestParam("name") String filename) {
@@ -49,6 +58,8 @@ public class DatasetController {
 
     /**
      * 批量删除数据集
+     * @param datasetDeleteDTO
+     * @return
      */
     @DeleteMapping("/delete-batch")
     public Result deleteBatch(@RequestBody DatasetDeleteDTO datasetDeleteDTO) {
@@ -59,6 +70,8 @@ public class DatasetController {
 
     /**
      * 修改数据集信息
+     * @param datasetDTO
+     * @return
      */
     @PutMapping("/update")
     public Result<String> update(@RequestBody DatasetDTO datasetDTO) {
@@ -68,6 +81,8 @@ public class DatasetController {
 
     /**
      * 修改数据集私有状态
+     * @param datasetDTO
+     * @return
      */
     @PutMapping("/status")
     public Result<String> updateStatus(@RequestBody DatasetDTO datasetDTO) {
@@ -78,6 +93,8 @@ public class DatasetController {
 
     /**
      * 修改数据集有权使用组织
+     * @param datasetOrganDTO
+     * @return
      */
     @PutMapping("/organ")
     public Result<DatasetOrganVO> updateDatasetOrgan(@RequestBody DatasetOrganDTO datasetOrganDTO) {
@@ -93,6 +110,8 @@ public class DatasetController {
 
     /**
      * 请求数据集信息
+     * @param datasetQueryDTO
+     * @return
      */
     @GetMapping("/query-by-id")
     public Result<DatasetQueryVO> selectById(@RequestBody  DatasetQueryDTO datasetQueryDTO) {
@@ -109,6 +128,7 @@ public class DatasetController {
 
     /**
      * 查询当前用户有权使用的所有数据集
+     * @return
      */
     @GetMapping("/query-all")
     public Result<DatasetQueryAllVO> selectAll() {
@@ -122,16 +142,15 @@ public class DatasetController {
         return Result.success(datasetqueryallVO);
     }
 
-
     /**
-     * 下载数据集
-     * @param filename
-     * @param response
+     * 下载文件
      * @return
+     * @throws Exception
      */
-    @GetMapping("/download/{filename}")
-    public Result<String> downloadFile(@PathVariable String filename, HttpServletResponse response){
-        return datasetService.downloadFile(filename, response);
+    public ResponseEntity<Resource> download() throws Exception {
+        String filePath = "D:\\test.txt";
+        String fileName = "文件下载.txt";
+        return fileUtil.download(filePath,fileName);
     }
 
 }
