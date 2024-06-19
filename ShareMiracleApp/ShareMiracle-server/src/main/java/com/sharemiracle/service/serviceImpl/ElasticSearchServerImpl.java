@@ -1,13 +1,19 @@
 package com.sharemiracle.service.serviceImpl;
 
+import co.elastic.clients.elasticsearch._types.FieldValue;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 
 import com.sharemiracle.constant.ElasticSearchConstant;
 import com.sharemiracle.constant.MessageConstant;
 import com.sharemiracle.dto.*;
+import com.sharemiracle.entity.Dataset;
+import com.sharemiracle.mapper.DatasetMapper;
 import com.sharemiracle.result.Result;
 import com.sharemiracle.service.ElasticSearchService;
 import com.sharemiracle.vo.EsSearchVO;
@@ -17,11 +23,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
 import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
 import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
+
+import javax.annotation.Resource;
 // import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 
 
@@ -32,6 +41,9 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
     @Autowired
     private ElasticsearchClient esClient;
 
+    @Resource
+    private DatasetMapper datasetMapper;
+
     //@Resource
     //private ElasticSearchMapper esMapper;
 
@@ -40,82 +52,95 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
      */
     @Override
     public EsSearchVO search(SearchDTO searchDTO) throws IOException {
-        // 解析前端DTO
-        // int pageId = searchDTO.getPage_id();
-        // String name = searchDTO.getName();
-        List<Integer> task_ids = searchDTO.getTask_ids();
-        List<Integer> modality_ids = searchDTO.getModality_ids();
-        List<Integer> organ_ids = searchDTO.getOrgan_ids();
-        // String description = searchDTO.getDescription();
-        // String sort = searchDTO.getSort();
-        int pageSize = searchDTO.getPage_size();
+        List<ElasticSearchItemDTO> datasets = searchDatasetsFromES(searchDTO);
+        List<Long> datasetIds = datasets.stream()
+                .map(dto -> Long.valueOf(dto.getId()))  // 将Integer转换为Long
+                .collect(Collectors.toList());
 
-        //构建筛选条件
-        BoolQuery.Builder boolQueryBuilder = new BoolQuery.Builder();
 
-        if (task_ids != null) {
-            for (int task_id : task_ids) {
-                boolQueryBuilder.should(MatchQuery.of(m -> m
-                    .field("task_ids")
-                    .query(task_id))._toQuery()
-                );
+        Map<Long, Integer> sortData = getSortingDataFromMySQL(datasetIds, searchDTO.getSort());
+
+        // 根据MySQL中的排序字段对结果进行排序
+        datasets.sort(Comparator.comparingInt(d -> sortData.getOrDefault((long) d.getId(), 0)));
+        Collections.reverse(datasets);  // 假设默认是降序
+
+        // 计算页数
+        int pageNum = (datasets.size() + searchDTO.getPage_size() - 1) / searchDTO.getPage_size();
+        return new EsSearchVO(pageNum, datasets);
+    }
+
+
+    public List<ElasticSearchItemDTO> searchDatasetsFromES(SearchDTO searchDTO) throws IOException {
+        // 构建布尔查询条件
+        Query query = QueryBuilders.bool(b -> {
+
+            // 如果description不为空，则添加到查询条件中
+            if (searchDTO.getDescription() != null && !searchDTO.getDescription().isEmpty()) {
+                b.must(m -> m.match(mt -> mt.field("description").query(searchDTO.getDescription())));
             }
-        }
 
-
-        if (modality_ids != null) {
-            for (int modality_id : modality_ids) {
-                boolQueryBuilder.should(MatchQuery.of(m -> m
-                    .field("modality_ids")
-                    .query(modality_id))._toQuery()
-                );
+            // 如果name不为空，则添加到查询条件中
+            if (searchDTO.getName() != null && !searchDTO.getName().isEmpty()) {
+                b.must(m -> m.match(mt -> mt.field("name").query(searchDTO.getName())));
             }
-        }
 
-        if (organ_ids != null) {
-            for (int organ_id :  organ_ids) {
-                boolQueryBuilder.should(MatchQuery.of(m -> m
-                    .field("organ_ids")
-                    .query(organ_id))._toQuery()
-                );
+            // 如果modality_ids不为空，则添加到过滤条件中
+            if (searchDTO.getModality_ids() != null && !searchDTO.getModality_ids().isEmpty()) {
+                b.filter(f -> f.terms(t -> t.field("modality_ids").terms(tms -> tms.value(searchDTO.getModality_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
             }
-        }
 
+            // 如果task_ids不为空，则添加到过滤条件中
+            if (searchDTO.getTask_ids() != null && !searchDTO.getTask_ids().isEmpty()) {
+                b.filter(f -> f.terms(t -> t.field("task_ids").terms(tms -> tms.value(searchDTO.getTask_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
+            }
 
-        // if (tags != null) {
-        //     for (String tag : tags) {
-        //         tagBuilder.append(String.format("%s ", tag));
-        //     }
-        // }
-        // if (queryStr != null)
-        //     tagBuilder.append(String.format("%s ",queryStr));
+            // 如果organ_ids不为空，则添加到过滤条件中
+            if (searchDTO.getOrgan_ids() != null && !searchDTO.getOrgan_ids().isEmpty()) {
+                b.filter(f -> f.terms(t -> t.field("organ_ids").terms(tms -> tms.value(searchDTO.getOrgan_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
+            }
 
-        // 使用循环将 que 列表中的每个查询添加到 must 子句中
+            return b;
+        });
 
-        // 查询es数据库
-        // TODO: 实现分页查询
-        SearchResponse<ElasticSearchItemDTO> searchResponse = esClient.search(s -> s.index(ElasticSearchConstant.MdataMetaDB)
-                        .query(q -> q.bool(boolQueryBuilder.build())),
-                ElasticSearchItemDTO.class);
+        // 使用searchDTO中的值
+        int pageId = searchDTO.getPage_id(); // 默认页码
+        int pageSize = searchDTO.getPage_size(); // 使用searchDTO提供的每页数量
 
-        log.info("find result",searchResponse);
+        // 构建搜索请求
+        SearchRequest searchRequest = new SearchRequest.Builder()
+                .index("dataset")
+                .query(query)
+                .from((pageId - 1) * pageSize)
+                .size(searchDTO.getPage_size())
+                .build();
 
-        //解析查询结果
-        List<Hit<ElasticSearchItemDTO>> hits = searchResponse.hits().hits();
-        List<ElasticSearchItemDTO> results = new ArrayList<>();
-        List<Double> scores = new ArrayList<>();
-        for (Hit<ElasticSearchItemDTO> hit: hits) {
-            ElasticSearchItemDTO items = hit.source();
-            results.add(items);
-            scores.add(hit.score());
-        }
+        SearchResponse<ElasticSearchItemDTO> response = esClient.search(searchRequest, ElasticSearchItemDTO.class);
+        return response.hits().hits().stream()
+                .map(Hit::source)
+                .collect(Collectors.toList());
+    }
 
-        int page_num = (hits.size() + pageSize - 1) / pageSize;
-        // 构建前端视图
-        return new EsSearchVO(
-                page_num,
-                results
-        );
+    public Map<Long, Integer> getSortingDataFromMySQL(List<Long> ids, String sortField) {
+        if (ids.isEmpty()) return Collections.emptyMap();
+
+        // 确定数据库中的字段名
+        String dbField = switch (sortField) {
+            case "trending" -> "clicks";
+            case "downloads" -> "downloads";
+            case "likes" -> "likes";
+            default -> "clicks";
+        };
+
+        // 进行查询
+        return datasetMapper.selectBatchIds(ids).stream()
+                .collect(Collectors.toMap(Dataset::getId, dataset -> {
+                    switch (dbField) {
+                        case "clicks": return dataset.getClicks();
+                        case "downloads": return dataset.getDownloads();
+                        case "likes": return dataset.getLikes();
+                        default: return 0;
+                    }
+                }));
     }
 
     @Override

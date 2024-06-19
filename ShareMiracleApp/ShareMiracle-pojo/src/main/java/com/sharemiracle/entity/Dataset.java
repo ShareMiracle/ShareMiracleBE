@@ -1,5 +1,6 @@
 package com.sharemiracle.entity;
 
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@TableName("t_dataset")
 public class Dataset implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -55,4 +57,9 @@ public class Dataset implements Serializable {
      */
     private LocalDateTime updateTime;
 
+    private Integer likes;
+
+    private Integer downloads;
+
+    private Integer clicks;
 }
