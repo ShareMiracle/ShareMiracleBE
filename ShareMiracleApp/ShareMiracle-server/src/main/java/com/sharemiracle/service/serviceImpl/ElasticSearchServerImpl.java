@@ -108,9 +108,9 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
 
         // 构建搜索请求
         SearchRequest searchRequest = new SearchRequest.Builder()
-                .index("dataset")
+                .index(ElasticSearchConstant.MdataMetaDB)
                 .query(query)
-                .from((pageId - 1) * pageSize)
+                .from(pageId * pageSize)
                 .size(searchDTO.getPage_size())
                 .build();
 
