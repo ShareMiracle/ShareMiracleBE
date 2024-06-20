@@ -52,16 +52,20 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
      */
     @Override
     public EsSearchVO search(SearchDTO searchDTO) throws IOException {
+        log.info("begin search Es Item");
         List<ElasticSearchItemDTO> datasets = searchDatasetsFromES(searchDTO);
+        log.info("finished search Es Item");
         List<Long> datasetIds = datasets.stream()
                 .map(dto -> Long.valueOf(dto.getId()))  // 将Integer转换为Long
                 .collect(Collectors.toList());
+        log.info("all dataset num:{}",datasetIds.size());
+        log.info("all dataset id:{}",datasetIds);
 
 
-        Map<Long, Integer> sortData = getSortingDataFromMySQL(datasetIds, searchDTO.getSort());
+        // Map<Long, Integer> sortData = getSortingDataFromMySQL(datasetIds, searchDTO.getSort());
 
         // 根据MySQL中的排序字段对结果进行排序
-        datasets.sort(Comparator.comparingInt(d -> sortData.getOrDefault((long) d.getId(), 0)));
+        // datasets.sort(Comparator.comparingInt(d -> sortData.getOrDefault((long) d.getId(), 0)));
         Collections.reverse(datasets);  // 假设默认是降序
 
         // 计算页数
@@ -74,29 +78,29 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
         // 构建布尔查询条件
         Query query = QueryBuilders.bool(b -> {
 
-            // 如果description不为空，则添加到查询条件中
-            if (searchDTO.getDescription() != null && !searchDTO.getDescription().isEmpty()) {
-                b.must(m -> m.match(mt -> mt.field("description").query(searchDTO.getDescription())));
-            }
+            // // 如果description不为空，则添加到查询条件中
+            // if (searchDTO.getDescription() != null && !searchDTO.getDescription().isEmpty()) {
+            //     b.must(m -> m.match(mt -> mt.field("description").query(searchDTO.getDescription())));
+            // }
 
-            // 如果name不为空，则添加到查询条件中
-            if (searchDTO.getName() != null && !searchDTO.getName().isEmpty()) {
-                b.must(m -> m.match(mt -> mt.field("name").query(searchDTO.getName())));
-            }
+            // // 如果name不为空，则添加到查询条件中
+            // if (searchDTO.getName() != null && !searchDTO.getName().isEmpty()) {
+            //     b.must(m -> m.match(mt -> mt.field("name").query(searchDTO.getName())));
+            // }
 
             // 如果modality_ids不为空，则添加到过滤条件中
             if (searchDTO.getModality_ids() != null && !searchDTO.getModality_ids().isEmpty()) {
-                b.filter(f -> f.terms(t -> t.field("modality_ids").terms(tms -> tms.value(searchDTO.getModality_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
+                b.must(f -> f.terms(t -> t.field("modality_ids").terms(tms -> tms.value(searchDTO.getModality_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
             }
 
             // 如果task_ids不为空，则添加到过滤条件中
             if (searchDTO.getTask_ids() != null && !searchDTO.getTask_ids().isEmpty()) {
-                b.filter(f -> f.terms(t -> t.field("task_ids").terms(tms -> tms.value(searchDTO.getTask_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
+                b.must(f -> f.terms(t -> t.field("task_ids").terms(tms -> tms.value(searchDTO.getTask_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
             }
 
             // 如果organ_ids不为空，则添加到过滤条件中
             if (searchDTO.getOrgan_ids() != null && !searchDTO.getOrgan_ids().isEmpty()) {
-                b.filter(f -> f.terms(t -> t.field("organ_ids").terms(tms -> tms.value(searchDTO.getOrgan_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
+                b.must(f -> f.terms(t -> t.field("organ_ids").terms(tms -> tms.value(searchDTO.getOrgan_ids().stream().map(FieldValue::of).collect(Collectors.toList())))));
             }
 
             return b;
@@ -108,10 +112,10 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
 
         // 构建搜索请求
         SearchRequest searchRequest = new SearchRequest.Builder()
-                .index("dataset")
+                .index(ElasticSearchConstant.MdataMetaDB)
                 .query(query)
                 .from((pageId - 1) * pageSize)
-                .size(searchDTO.getPage_size())
+                .size(1500)
                 .build();
 
         SearchResponse<ElasticSearchItemDTO> response = esClient.search(searchRequest, ElasticSearchItemDTO.class);
@@ -130,14 +134,15 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
             case "likes" -> "likes";
             default -> "clicks";
         };
+        // return 0;
 
         // 进行查询
         return datasetMapper.selectBatchIds(ids).stream()
                 .collect(Collectors.toMap(Dataset::getId, dataset -> {
                     switch (dbField) {
-                        case "clicks": return dataset.getClicks();
-                        case "downloads": return dataset.getDownloads();
-                        case "likes": return dataset.getLikes();
+                        // case "clicks": return dataset.getClicks();
+                        // case "downloads": return dataset.getDownloads();
+                        // case "likes": return dataset.getLikes();
                         default: return 0;
                     }
                 }));
