@@ -3,6 +3,8 @@ package com.sharemiracle.service.serviceImpl;
 import co.elastic.clients.elasticsearch._types.FieldValue;
 import co.elastic.clients.elasticsearch._types.query_dsl.Query;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.CountRequest;
+import co.elastic.clients.elasticsearch.core.CountResponse;
 import co.elastic.clients.elasticsearch.core.GetResponse;
 import co.elastic.clients.elasticsearch.core.IndexResponse;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
@@ -27,8 +29,6 @@ import java.util.stream.Collectors;
 
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import lombok.extern.slf4j.Slf4j;
-import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
-import co.elastic.clients.elasticsearch._types.query_dsl.MatchQuery;
 
 import javax.annotation.Resource;
 // import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
@@ -55,31 +55,37 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
         log.info("begin search Es Item");
         List<ElasticSearchItemDTO> datasets = searchDatasetsFromES(searchDTO);
         log.info("finished search Es Item");
-        List<Long> datasetIds = datasets.stream()
-                .map(dto -> Long.valueOf(dto.getId()))  // 将Integer转换为Long
+        List<Integer> datasetIds = datasets.stream()
+                .map(dto -> Integer.valueOf(dto.getId()))  // 将Integer转换为Long
                 .collect(Collectors.toList());
         log.info("all dataset num:{}",datasetIds.size());
 
-        Map<Long, Integer> sortData = getSortingDataFromMySQL(datasetIds, searchDTO.getSort());
+        Map<Integer, Long> sortData = getSortingData(datasetIds, searchDTO.getSort());
 
         // 根据MySQL中的排序字段对结果进行排序
-        datasets.sort(Comparator.comparingInt(d -> sortData.getOrDefault((long) d.getId(), 0)));
+        datasets.sort(Comparator.comparingLong(d -> sortData.getOrDefault(d.getId(), 0L)));
         Collections.reverse(datasets);  // 假设默认是降序
 
-
-        // 当 page_id 为 0 时，计算当前页数
-        
-
         // 计算页数
-        int pageNum = (datasets.size() + searchDTO.getPage_size() - 1) / searchDTO.getPage_size();
+        int pageNum = -1;
+        
+        // 当 page_id 为 0 时，计算当前页数
+        if (searchDTO.getPage_id() == 0) {
+            Query query = this.getESSearchQuery(searchDTO);
+            CountRequest countRequest = CountRequest.of(c -> c
+                .index(ElasticSearchConstant.MdataMetaDB)
+                .query(query)
+            );
+            CountResponse countResponse = esClient.count(countRequest);
+            long count = countResponse.count();
+            pageNum = Math.ceilDiv((int)count, searchDTO.getPage_size());
+        }
 
         return new EsSearchVO(pageNum, datasets);
     }
 
-
-    public List<ElasticSearchItemDTO> searchDatasetsFromES(SearchDTO searchDTO) throws IOException {
-        // 构建布尔查询条件
-        Query query = QueryBuilders.bool(b -> {
+    private Query getESSearchQuery(SearchDTO searchDTO) {
+        return QueryBuilders.bool(b -> {
 
             // // 如果description不为空，则添加到查询条件中
             // if (searchDTO.getDescription() != null && !searchDTO.getDescription().isEmpty()) {
@@ -108,6 +114,12 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
 
             return b;
         });
+    }
+
+
+    public List<ElasticSearchItemDTO> searchDatasetsFromES(SearchDTO searchDTO) throws IOException {
+        // 构建布尔查询条件
+        Query query = this.getESSearchQuery(searchDTO);
 
         // 使用searchDTO中的值
         int pageId = searchDTO.getPage_id(); // 默认页码
@@ -129,28 +141,41 @@ public class ElasticSearchServerImpl implements ElasticSearchService {
                 .collect(Collectors.toList());
     }
 
-    public Map<Long, Integer> getSortingDataFromMySQL(List<Long> ids, String sortField) {
+    public Map<Integer, Long> getSortingData(List<Integer> ids, String sortField) {
         if (ids.isEmpty()) return Collections.emptyMap();
 
-        // 确定数据库中的字段名
-        String dbField = switch (sortField) {
-            case "trending" -> "clicks";
-            case "downloads" -> "downloads";
-            case "likes" -> "likes";
-            default -> "clicks";
-        };
-        // return 0;
+        return ids.stream().collect(Collectors.toMap(
+                i -> i,  // key
+                i -> {
+                    try{
+                        // 查找id对应文档
+                        GetResponse<MdataMetaStatus> mdataRes = esClient.get(item -> item
+                            .index(ElasticSearchConstant.MdataMetaManageDB)
+                            .id(String.valueOf(i))
+                            , MdataMetaStatus.class);       
 
-        // 进行查询
-        return datasetMapper.selectBatchIds(ids).stream()
-                .collect(Collectors.toMap(Dataset::getId, dataset -> {
-                    switch (dbField) {
-                        // case "clicks": return dataset.getClicks();
-                        // case "downloads": return dataset.getDownloads();
-                        // case "likes": return dataset.getLikes();
-                        default: return 0;
+                        if (mdataRes.found()) {
+                            //根据关键字选择排序属性
+                            Long value = switch (sortField) {
+                                case "trending" -> mdataRes.source().getCounter_trending();
+                                case "downloads" -> mdataRes.source().getCounter_downloads();
+                                case "likes" -> mdataRes.source().getCounter_likes();
+                                case "created" -> mdataRes.source().getCreateTS();
+                                case "updated" -> mdataRes.source().getModifyTS();
+                                default -> mdataRes.source().getCounter_trending();
+                            };
+                            return value;
+                        } else {
+                            return -1L;
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return null;
                     }
-                }));
+                    
+                }
+            ));
+
     }
 
     @Override

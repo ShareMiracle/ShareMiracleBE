@@ -17,4 +17,13 @@ public class MdataMetaStatus implements Serializable {
     private int status;
     private long createTS;
     private long modifyTS;
+
+    @Builder.Default
+    private long counter_trending = 0;
+
+    @Builder.Default
+    private long counter_likes = 0;
+
+    @Builder.Default
+    private long counter_downloads = 0;
 }
