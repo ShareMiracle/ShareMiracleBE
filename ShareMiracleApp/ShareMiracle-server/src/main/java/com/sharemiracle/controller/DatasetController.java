@@ -7,15 +7,12 @@ import com.sharemiracle.dto.DatasetQueryDTO;
 import com.sharemiracle.entity.Dataset;
 import com.sharemiracle.result.Result;
 import com.sharemiracle.service.DatasetService;
-import com.sharemiracle.utils.FileUtil;
 import com.sharemiracle.vo.DatasetOrganVO;
 import com.sharemiracle.vo.DatasetQueryAllVO;
 import com.sharemiracle.vo.DatasetQueryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.core.io.Resource;
 
 import java.util.List;
 
@@ -28,8 +25,6 @@ public class DatasetController {
     @Autowired
     private DatasetService datasetService;
 
-    @Autowired
-    private FileUtil fileUtil;
 
     /**
      * 新建数据集
@@ -142,15 +137,16 @@ public class DatasetController {
         return Result.success(datasetqueryallVO);
     }
 
-    /**
-     * 下载文件
-     * @return
-     * @throws Exception
-     */
-    public ResponseEntity<Resource> download() throws Exception {
-        String filePath = "D:\\test.txt";
-        String fileName = "文件下载.txt";
-        return fileUtil.download(filePath,fileName);
-    }
+    // Springboot框架提供的下载方法，废置。
+//    /**
+//     * 下载文件
+//     * @return
+//     * @throws Exception
+//     */
+//    public ResponseEntity<Resource> download() throws Exception {
+//        String filePath = "D:\\test.txt";
+//        String fileName = "文件下载.txt";
+//        return fileUtil.download(filePath,fileName);
+//    }
 
 }
