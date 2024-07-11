@@ -5,6 +5,7 @@ import com.sharemiracle.entity.FileEntity;
 import com.sharemiracle.mapper.FileMapper;
 import com.sharemiracle.result.Result;
 import com.sharemiracle.service.FileService;
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
@@ -17,8 +18,13 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 
 @Service
@@ -28,58 +34,110 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
     @Override
     public Result<String> downLoad(String filePath) {
         //"http://139.196.106.190:8002/10_Decathlon/Task02_Heart/imagesTr/";
+        // 验证文件路径是否有效的 URL 格式
+        if (!filePath.startsWith("http://") && !filePath.startsWith("https://")) {
+            return Result.error("无效的文件URL！");
+        }
+
+        // 限制下载文件的最大大小（以字节为单位）
+        long maxFileSize = 100 * 1024 * 1024; // 100 MB
+        if (filePath.length() > maxFileSize) {
+            return Result.error("文件过大，下载失败！");
+        }
+
+        // 解析文件名
         String[] parts = filePath.split("/");
         String fileName = parts[parts.length - 1];
-
         String fileDownPath = "d:/test";
-        //创建不同的文件夹目录
+        // 确保文件路径安全性（避免路径遍历）
+        if (fileName.contains("..") || fileName.contains("/")) {
+            return Result.error("无效的文件名！");
+        }
+
+        // 创建不同的文件夹目录
         File file = new File(fileDownPath);
-        //判断文件夹是否存在
+        // 判断文件夹是否存在
         if (!file.exists()) {
-            //如果文件夹不存在，则创建新的的文件夹
+            // 如果文件夹不存在，则创建新的文件夹
             file.mkdirs();
         }
+
         FileOutputStream fileOut = null;
         HttpURLConnection conn = null;
         InputStream inputStream = null;
         try {
             // 建立链接
-            URL httpUrl=new URL(filePath);
-            conn=(HttpURLConnection) httpUrl.openConnection();
-            //以Post方式提交表单，默认get方式
+            URL httpUrl = new URL(filePath);
+            conn = (HttpURLConnection) httpUrl.openConnection();
+            // 以Post方式提交表单，默认get方式
             conn.setRequestMethod("GET");
             conn.setDoInput(true);
             conn.setDoOutput(true);
             // post方式不能使用缓存
             conn.setUseCaches(false);
-            //连接指定的资源
+            // 连接指定的资源
             conn.connect();
-            //获取网络输入流
-            inputStream=conn.getInputStream();
+
+            // 验证文件大小是否符合限制
+            long contentLength = conn.getContentLengthLong();
+            if (contentLength > maxFileSize) {
+                return Result.error("文件过大，下载失败！");
+            }
+            // 创建UUID作为安全的软链接名称
+            String safeLinkName = java.util.UUID.randomUUID().toString();
+            Path safeLinkPath = Paths.get(filePath, safeLinkName);
+
+            // 创建软链接
+            Files.createSymbolicLink(safeLinkPath, Paths.get(filePath));
+
+            // 构建下载链接
+            String downloadLink = String.format("%s/%s/%s","http://139.196.106.190:8002/"); // 下载主机名(跳板机域名/ip), SYMBOL_LINK_DIR_NAME, safeLinkName);
+            // 获取网络输入流
+            inputStream = conn.getInputStream();
             BufferedInputStream bis = new BufferedInputStream(inputStream);
-            //判断文件的保存路径后面是否以/结尾
+            // 判断文件的保存路径后面是否以/结尾
             if (!fileDownPath.endsWith("/")) {
                 fileDownPath += "/";
             }
-            //写入到文件（注意文件保存路径的后面一定要加上文件的名称）
-            fileOut = new FileOutputStream(fileDownPath+fileName);
+            // 写入到文件（注意文件保存路径的后面一定要加上文件的名称）
+            fileOut = new FileOutputStream(fileDownPath + fileName);
             BufferedOutputStream bos = new BufferedOutputStream(fileOut);
 
             byte[] buf = new byte[4096];
             int length = bis.read(buf);
-            //保存文件
-            while(length != -1) {
+            // 保存文件
+            while (length != -1) {
                 bos.write(buf, 0, length);
                 length = bis.read(buf);
             }
             bos.close();
             bis.close();
             conn.disconnect();
+
+            // 5秒后删除软链接
+            new Thread(() -> {
+                try {
+                    TimeUnit.SECONDS.sleep(5);
+                    Files.deleteIfExists(safeLinkPath);
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
+            // 记录成功日志
+            System.out.println("文件下载成功: " + fileDownPath + fileName);
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("抛出异常！！");
             return Result.error("下载失败！");
-
+        } finally {
+            // 确保资源被关闭
+            try {
+                if (fileOut != null) fileOut.close();
+                if (inputStream != null) inputStream.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
 
         return Result.success();
@@ -106,7 +164,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         try {
             responseBody = EntityUtils.toString(response.getEntity());
         } catch (IOException e) {
-            // TODO:自定义异常处理
+            // 自定义异常处理
             throw new RuntimeException(e);
         }
 
@@ -125,7 +183,6 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
             }
         }
 
-        //TODO:返回的参数增加资源的路径/标识符（而不仅仅是文件(夹)名）
         return fileNames;
     }
 }
