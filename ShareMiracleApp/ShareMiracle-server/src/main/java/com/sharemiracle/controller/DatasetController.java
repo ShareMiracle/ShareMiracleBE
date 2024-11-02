@@ -4,6 +4,7 @@ import com.sharemiracle.dto.DatasetDTO;
 import com.sharemiracle.dto.DatasetDeleteDTO;
 import com.sharemiracle.dto.DatasetOrganDTO;
 import com.sharemiracle.dto.DatasetQueryDTO;
+import com.sharemiracle.dto.DownloadDTO;
 import com.sharemiracle.entity.Dataset;
 import com.sharemiracle.result.Result;
 import com.sharemiracle.service.DatasetService;
@@ -45,10 +46,10 @@ public class DatasetController {
      * @return
      */
     @DeleteMapping("/delete")
-    public Result delete(@RequestBody DatasetDeleteDTO datasetDeleteDTO, @RequestParam("name") String filename) {
+    public Result<String> delete(@RequestBody DatasetDeleteDTO datasetDeleteDTO, @RequestParam("name") String filename) {
         log.info("删除数据集数据：{}", datasetDeleteDTO.getId());
         datasetService.delete(datasetDeleteDTO);
-        return Result.success();
+        return Result.success("success");
     }
 
     /**
@@ -57,10 +58,10 @@ public class DatasetController {
      * @return
      */
     @DeleteMapping("/delete-batch")
-    public Result deleteBatch(@RequestBody DatasetDeleteDTO datasetDeleteDTO) {
+    public Result<String> deleteBatch(@RequestBody DatasetDeleteDTO datasetDeleteDTO) {
         log.info("批量删除数据集数据：{}", datasetDeleteDTO.getIds());
         datasetService.deleteBatch(datasetDeleteDTO);
-        return Result.success();
+        return Result.success("success");
     }
 
     /**
@@ -109,7 +110,7 @@ public class DatasetController {
      * @return
      */
     @GetMapping("/query-by-id")
-    public Result<DatasetQueryVO> selectById(@RequestBody  DatasetQueryDTO datasetQueryDTO) {
+    public Result<DatasetQueryVO> selectById(@RequestBody DatasetQueryDTO datasetQueryDTO) {
         log.info("请求数据集信息: {}",datasetQueryDTO);
 
         Dataset dataset = datasetService.selectById(datasetQueryDTO);
@@ -148,5 +149,12 @@ public class DatasetController {
 //        String fileName = "文件下载.txt";
 //        return fileUtil.download(filePath,fileName);
 //    }
+
+    @PostMapping("/create-google-driver-download-session")
+    public Result<String> createGoogleDriverDownloadSession(@RequestBody DownloadDTO downloadDTO) {
+        log.info("创建 google driver 下载事务, url: {}", downloadDTO.getUrl());
+        
+        return Result.success("success");
+    }
 
 }
