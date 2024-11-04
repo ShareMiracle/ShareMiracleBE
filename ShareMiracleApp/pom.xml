@@ -141,11 +141,11 @@
             </dependency>
 
             <!-- mongoDB -->
-            <dependency>
+            <!-- <dependency>
                 <groupId>org.mongodb</groupId>
                 <artifactId>mongo-java-driver</artifactId>
                 <version>${mongodb}</version>
-            </dependency>
+            </dependency> -->
 
             <!-- elasticsearch-->
             <dependency>

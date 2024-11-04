@@ -1,0 +1,114 @@
+2024-11-04 18:58:58 INFO  c.s.ShareMiracleApplication - Starting ShareMiracleApplication v1.0-SNAPSHOT using Java 20.0.2 on k with PID 23468 (C:\Users\11934\Project\multimodal-medical-database\ShareMiracle\ShareMiracleApp\ShareMiracle-server\target\ShareMiracle-server-1.0-SNAPSHOT.jar started by 11934 in C:\Users\11934\Project\multimodal-medical-database\ShareMiracle\ShareMiracleApp)
+2024-11-04 18:58:58 INFO  c.s.ShareMiracleApplication - The following 1 profile is active: "lab"
+2024-11-04 18:58:59 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2024-11-04 18:58:59 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-11-04 18:58:59 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 13 ms. Found 0 Redis repository interfaces.
+2024-11-04 18:59:00 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2024-11-04 18:59:00 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2024-11-04 18:59:00 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2024-11-04 18:59:00 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.65]
+2024-11-04 18:59:00 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2024-11-04 18:59:00 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2317 ms
+2024-11-04 18:59:00 INFO  c.a.d.s.b.a.DruidDataSourceAutoConfigure - Init DruidDataSource
+2024-11-04 18:59:00 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.deleteById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.DeleteById]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+2024-11-04 18:59:01 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.UserMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 18:59:03 INFO  c.s.config.WebMvcConfiguration - 开始注册自定义拦截器...
+2024-11-04 18:59:03 INFO  org.redisson.Version - Redisson 3.13.6
+2024-11-04 18:59:04 INFO  o.r.c.p.MasterPubSubConnectionPool - 1 connections initialized for /172.16.120.234:6379
+2024-11-04 18:59:04 INFO  o.r.c.pool.MasterConnectionPool - 24 connections initialized for /172.16.120.234:6379
+2024-11-04 18:59:04 INFO  c.s.config.WebMvcConfiguration - 扩展消息转换器...
+2024-11-04 18:59:04 INFO  org.mongodb.driver.cluster - Cluster created with settings {hosts=[172.16.120.234:27017], mode=SINGLE, requiredClusterType=UNKNOWN, serverSelectionTimeout='30000 ms', maxWaitQueueSize=500}
+2024-11-04 18:59:04 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2024-11-04 18:59:04 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+2024-11-04 18:59:05 INFO  c.s.ShareMiracleApplication - Started ShareMiracleApplication in 7.49 seconds (JVM running for 8.196)
+2024-11-04 18:59:05 INFO  c.s.ShareMiracleApplication - server started...
+2024-11-04 18:59:06 INFO  org.mongodb.driver.cluster - Exception in monitor thread while connecting to server 172.16.120.234:27017
+com.mongodb.MongoSocketOpenException: Exception opening socket
+	at com.mongodb.internal.connection.SocketStream.open(SocketStream.java:70)
+	at com.mongodb.internal.connection.InternalStreamConnection.open(InternalStreamConnection.java:128)
+	at com.mongodb.internal.connection.DefaultServerMonitor$ServerMonitorRunnable.run(DefaultServerMonitor.java:117)
+	at java.base/java.lang.Thread.run(Thread.java:1623)
+Caused by: java.net.ConnectException: Connection refused: no further information
+	at java.base/sun.nio.ch.Net.pollConnect(Native Method)
+	at java.base/sun.nio.ch.Net.pollConnectNow(Net.java:673)
+	at java.base/sun.nio.ch.NioSocketImpl.timedFinishConnect(NioSocketImpl.java:547)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:590)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:666)
+	at com.mongodb.internal.connection.SocketStreamHelper.initialize(SocketStreamHelper.java:64)
+	at com.mongodb.internal.connection.SocketStream.initializeSocket(SocketStream.java:79)
+	at com.mongodb.internal.connection.SocketStream.open(SocketStream.java:65)
+	... 3 common frames omitted
+2024-11-04 19:00:04 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2024-11-04 19:00:04 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2024-11-04 19:01:04 INFO  c.s.ShareMiracleApplication - Starting ShareMiracleApplication v1.0-SNAPSHOT using Java 20.0.2 on k with PID 23524 (C:\Users\11934\Project\multimodal-medical-database\ShareMiracle\ShareMiracleApp\ShareMiracle-server\target\ShareMiracle-server-1.0-SNAPSHOT.jar started by 11934 in C:\Users\11934\Project\multimodal-medical-database\ShareMiracle\ShareMiracleApp)
+2024-11-04 19:01:04 INFO  c.s.ShareMiracleApplication - The following 1 profile is active: "lab"
+2024-11-04 19:01:05 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2024-11-04 19:01:05 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-11-04 19:01:05 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 15 ms. Found 0 Redis repository interfaces.
+2024-11-04 19:01:06 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2024-11-04 19:01:06 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2024-11-04 19:01:06 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2024-11-04 19:01:06 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.65]
+2024-11-04 19:01:06 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2024-11-04 19:01:06 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2232 ms
+2024-11-04 19:01:06 INFO  c.a.d.s.b.a.DruidDataSourceAutoConfigure - Init DruidDataSource
+2024-11-04 19:01:06 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.deleteById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.DeleteById]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+2024-11-04 19:01:07 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.UserMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 19:01:08 INFO  c.s.config.WebMvcConfiguration - 开始注册自定义拦截器...
+2024-11-04 19:01:08 INFO  org.redisson.Version - Redisson 3.13.6
+2024-11-04 19:01:09 INFO  o.r.c.p.MasterPubSubConnectionPool - 1 connections initialized for /172.16.120.234:6379
+2024-11-04 19:01:09 INFO  o.r.c.pool.MasterConnectionPool - 24 connections initialized for /172.16.120.234:6379
+2024-11-04 19:01:09 INFO  c.s.config.WebMvcConfiguration - 扩展消息转换器...
+2024-11-04 19:01:09 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2024-11-04 19:01:09 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+2024-11-04 19:01:10 INFO  c.s.ShareMiracleApplication - Started ShareMiracleApplication in 6.583 seconds (JVM running for 7.266)
+2024-11-04 19:01:10 INFO  c.s.ShareMiracleApplication - server started...
+2024-11-04 19:03:47 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2024-11-04 19:03:47 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
+2024-11-04 19:03:57 INFO  c.s.ShareMiracleApplication - Starting ShareMiracleApplication v1.0-SNAPSHOT using Java 20.0.2 on k with PID 47072 (C:\Users\11934\Project\multimodal-medical-database\ShareMiracle\ShareMiracleApp\ShareMiracle-server\target\ShareMiracle-server-1.0-SNAPSHOT.jar started by 11934 in C:\Users\11934\Project\multimodal-medical-database\ShareMiracle\ShareMiracleApp)
+2024-11-04 19:03:57 INFO  c.s.ShareMiracleApplication - The following 1 profile is active: "lab"
+2024-11-04 19:03:58 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2024-11-04 19:03:58 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2024-11-04 19:03:58 INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 16 ms. Found 0 Redis repository interfaces.
+2024-11-04 19:03:59 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2024-11-04 19:03:59 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-8080"]
+2024-11-04 19:03:59 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2024-11-04 19:03:59 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.65]
+2024-11-04 19:04:00 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2024-11-04 19:04:00 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2090 ms
+2024-11-04 19:04:00 INFO  c.a.d.s.b.a.DruidDataSourceAutoConfigure - Init DruidDataSource
+2024-11-04 19:04:00 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} inited
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.deleteById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.DeleteById]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.DatasetMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.update] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Update]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.ModelMapper.selectById] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.SelectById]
+2024-11-04 19:04:00 WARN  c.b.m.core.injector.AbstractMethod - [com.sharemiracle.mapper.UserMapper.insert] Has been loaded by XML or SqlProvider or Mybatis's Annotation, so ignoring this injection for [class com.baomidou.mybatisplus.core.injector.methods.Insert]
+2024-11-04 19:04:01 INFO  c.s.config.WebMvcConfiguration - 开始注册自定义拦截器...
+2024-11-04 19:04:02 INFO  org.redisson.Version - Redisson 3.13.6
+2024-11-04 19:04:02 INFO  o.r.c.p.MasterPubSubConnectionPool - 1 connections initialized for /172.16.120.234:6379
+2024-11-04 19:04:02 INFO  o.r.c.pool.MasterConnectionPool - 24 connections initialized for /172.16.120.234:6379
+2024-11-04 19:04:02 INFO  c.s.config.WebMvcConfiguration - 扩展消息转换器...
+2024-11-04 19:04:03 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-8080"]
+2024-11-04 19:04:03 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+2024-11-04 19:04:03 INFO  c.s.ShareMiracleApplication - Started ShareMiracleApplication in 6.161 seconds (JVM running for 6.885)
+2024-11-04 19:04:03 INFO  c.s.ShareMiracleApplication - server started...
+2024-11-04 19:05:08 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} closing ...
+2024-11-04 19:05:08 INFO  c.alibaba.druid.pool.DruidDataSource - {dataSource-1} closed
