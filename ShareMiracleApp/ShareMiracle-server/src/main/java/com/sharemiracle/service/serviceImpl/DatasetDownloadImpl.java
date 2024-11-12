@@ -152,18 +152,22 @@ public class DatasetDownloadImpl implements DatasetDownloadService {
 
         private String downloadUrl;
         private String confirmCode;
-        private float percent;
+        private float progress;
         private Boolean stoped;
 
         public DownloadThread(String downloadUrl, String confirmCode) {
             this.downloadUrl = downloadUrl;
             this.confirmCode = confirmCode;
-            this.percent = 0;
+            this.progress = 0;
             this.stoped = false;
         }
 
         public Boolean getStoped() {
             return stoped;
+        }
+
+        public float getProgress() {
+            return progress;
         }
 
         @Override
@@ -207,8 +211,9 @@ public class DatasetDownloadImpl implements DatasetDownloadService {
                                 double progress = (double) totalBytesRead / totalLength * 100;
                                 System.out.printf("Download progress: %.2f%%\n", progress);
                             }
+
                             
-                            response.getEntity().writeTo(outputStream);
+                            entity.writeTo(outputStream);
                         }
                         log.info("Google Driver 文件下载: " + fileName);
                     } else {
